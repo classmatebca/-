@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Classmate · BCA Class </title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Malayalam:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F5F6FB; --surface:#fff; --soft:#EEF0FA; --text:#1B1D36; --muted:#6D7092; --border:#E3E5F1;
+  --primary:#5B55D9; --on-primary:#fff; --primary-soft:#E8E7FF; --on-primary-soft:#2E2A7A;
+  --green:#157A58; --green-soft:#DFF5EC; --orange:#A85F14; --orange-soft:#FFF0DC; --red:#B83B3B; --red-soft:#FCE8E8;
+  --radius:18px; --shadow:0 10px 30px rgba(40,40,100,.08);
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#12132A; --surface:#1C1D38; --soft:#25264A; --text:#ECECF8; --muted:#A5A7C6; --border:#34365A;
+  --primary:#7A74F0; --primary-soft:#2F2D68; --on-primary-soft:#E3E2FF;
+  --green:#52D0A5; --green-soft:#153A2E; --orange:#F0A55E; --orange-soft:#3A2A15; --red:#F08A8A; --red-soft:#3F2022;
+  --shadow:0 10px 30px rgba(0,0,0,.3); color-scheme:dark;}}
+*{box-sizing:border-box}
+html{scroll-padding-top:80px}
+body{margin:0;font:15px/1.5 Inter,"Noto Sans Malayalam",system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.hidden{display:none!important}
+.wrap{max-width:1040px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left))}
+
+/* header */
+header.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.5px}
+.logo{width:36px;height:36px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;font-size:18px}
+.brand small{display:block;font-size:9.5px;letter-spacing:1.6px;color:var(--muted);font-weight:700;margin-top:1px}
+.who{display:flex;align-items:center;gap:10px}
+.who .name{font-size:13px;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* buttons */
+.btn{border:0;border-radius:12px;padding:10px 16px;background:var(--primary);color:var(--on-primary);font-weight:700;font-size:14px;transition:transform .15s,opacity .15s}
+.btn:hover{transform:translateY(-1px);opacity:.93}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.soft{background:var(--primary-soft);color:var(--on-primary-soft)}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn.danger{background:var(--red-soft);color:var(--red)}
+.btn.sm{padding:7px 11px;font-size:12.5px;border-radius:10px}
+.btn.full{width:100%}
+
+/* auth landing */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;padding:48px 0 30px}
+.hero h1{font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-2px;margin:14px 0}
+.hero h1 span{color:var(--primary)}
+.hero p{color:var(--muted);max-width:460px;font-size:16px}
+.eyebrow{display:inline-block;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--on-primary-soft);background:var(--primary-soft);padding:6px 11px;border-radius:999px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 4px;font-size:20px;letter-spacing:-.4px}
+.card .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:12px;padding:4px;margin-bottom:18px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:9px;font-weight:700;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:11px;padding:11px 12px;background:var(--bg);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.msg{font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.msg.err{background:var(--red-soft);color:var(--red)}
+.msg.ok{background:var(--green-soft);color:var(--green)}
+.link{background:none;border:0;color:var(--primary);font-weight:600;font-size:12.5px;padding:0}
+
+/* pending */
+.center{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:24px 0}
+.center .card{max-width:430px;text-align:center}
+.big-icon{width:64px;height:64px;border-radius:20px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center;font-size:30px;margin:0 auto 16px}
+
+/* app */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0 16px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px}
+.stat b{display:block;font-size:26px;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11.5px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;color:var(--muted);white-space:nowrap}
+.tab.on{background:var(--primary);color:var(--on-primary);border-color:transparent}
+.chat-notify{display:inline-block;width:9px;height:9px;margin-left:8px;border-radius:50%;background:#22c55e;vertical-align:middle;box-shadow:0 0 0 2px var(--surface)}
+.chat-notify.blink{animation:chatBlink 1s ease-in-out infinite}
+@keyframes chatBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.2;transform:scale(.72)}}
+@media(prefers-reduced-motion:reduce){.chat-notify.blink{animation:none}}
+.badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:999px;background:var(--orange-soft);color:var(--orange);font-size:11px;font-weight:800}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input{flex:1;min-width:180px;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:11px 13px;outline:none}
+.toolbar input:focus{border-color:var(--primary)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--border);background:transparent;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--muted)}
+.chip.on{background:var(--primary-soft);color:var(--on-primary-soft);border-color:transparent}
+.list{display:grid;gap:10px}
+.item{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
+.ficon{width:44px;height:44px;border-radius:12px;background:var(--primary-soft);color:var(--on-primary-soft);display:grid;place-items:center;font-weight:800;font-size:12px;flex-shrink:0}
+.grow{flex:1;min-width:0}
+.item strong{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.tag{display:inline-block;margin-top:6px;border-radius:7px;padding:3px 8px;font-size:10.5px;font-weight:800;background:var(--soft);color:var(--muted)}
+.empty{text-align:center;padding:36px 12px;color:var(--muted);font-size:13px;background:var(--surface);border:1px dashed var(--border);border-radius:16px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--primary-soft);color:var(--on-primary-soft);display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0}
+
+/* chat */
+.chat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;height:min(62vh,520px)}
+.chat-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bubble-row{display:flex;gap:9px;max-width:85%}
+.bubble-row.me{align-self:flex-end;flex-direction:row-reverse}
+.bubble{background:var(--soft);border-radius:4px 14px 14px 14px;padding:9px 12px;font-size:13.5px;overflow-wrap:anywhere}
+.me .bubble{background:var(--primary);color:var(--on-primary);border-radius:14px 4px 14px 14px}
+.bubble b{display:block;font-size:11px;margin-bottom:2px;opacity:.8}
+.bubble time{display:block;font-size:10px;opacity:.65;margin-top:3px}
+.chat-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
+.chat-form input{flex:1;min-width:0;border:1px solid var(--border);background:var(--bg);border-radius:12px;padding:11px 13px;outline:none}
+
+/* modal */
+.backdrop{position:fixed;inset:0;background:rgba(15,15,40,.55);z-index:30;display:grid;place-items:center;padding:16px}
+.modal{width:min(100%,440px);max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:24px}
+.modal h2{margin:0 0 4px}
+.modal .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#232246;color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;z-index:50;max-width:90vw;text-align:center}
+.setup{background:var(--orange-soft);color:var(--orange);border-radius:14px;padding:16px;font-size:13px;margin:24px 0}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 40px}
+
+@media(max-width:760px){
+  .hero{grid-template-columns:1fr;padding-top:28px}
+  .who .name{display:none}
+  .row2{grid-template-columns:1fr;gap:0}
+}
+@media(prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><div class="logo">✳</div><div>classmate<small>BCA CLASS </small></div></div>
+  <div class="who hidden" id="whoBox">
+    <span class="name" id="whoName"></span>
+    <button class="btn ghost sm" id="logoutBtn">Log out</button>
+  </div>
+</div></header>
+
+<!-- Loading -->
+<div class="center hidden" id="vLoading"><div class="sub" style="color:var(--muted)">Loading…</div></div>
+
+<!-- Signed-out -->
+<main class="wrap hidden" id="vAuth">
+  <section class="hero">
+    <div>
+      <span class="eyebrow">BCA · Your batch</span>
+      <h1>Learn together.<br><span>Share everything.</span></h1>
+      <p>Notes, requests, and class chat — everything in one place. Send an access request to join. The admin will approve your account.</p>
+    </div>
+    <div class="card">
+      <div class="seg"><button class="on" id="segLogin">Log in</button><button id="segJoin">Request access</button></div>
+      <div id="authMsg"></div>
+      <form id="loginForm">
+        <div class="field"><label for="le">Email</label><input id="le" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="lp">Password</label><input id="lp" type="password" required autocomplete="current-password"></div>
+        <button class="btn full" type="submit">Log in</button>
+        <p style="text-align:center;margin:12px 0 0"><button type="button" class="link" id="forgotBtn">Forgot password?</button></p>
+      </form>
+      <form id="joinForm" class="hidden">
+        <div class="field"><label for="jn">Full name</label><input id="jn" required maxlength="60" autocomplete="name"></div>
+        <div class="field"><label for="je">Email</label><input id="je" type="email" required autocomplete="email"></div>
+        <div class="row2">
+          <div class="field"><label for="js">Semester</label><select id="js"><option>Semester 1</option><option>Semester 2</option><option>Semester 3</option><option>Semester 4</option><option>Semester 5</option><option>Semester 6</option></select></div>
+          <div class="field"><label for="jb">Class / batch</label><input id="jb" required maxlength="20" placeholder="BCA"></div>
+        </div>
+        <div class="field"><label for="jp">Password</label><input id="jp" type="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters"></div>
+        <button class="btn full" type="submit">Send access request</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- Pending / declined -->
+<main class="wrap hidden" id="vPending"><div class="center"><div class="card">
+  <div class="big-icon" id="pendIcon">⏳</div>
+  <h2 id="pendTitle">Waiting for approval</h2>
+  <p class="sub" id="pendText">Your request has been sent to the admin. This page will open automatically after approval.</p>
+  <button class="btn ghost" id="pendLogout">Log out</button>
+</div></div></main>
+
+<!-- App -->
+<main class="wrap hidden" id="vApp">
+  <div class="stats">
+    <div class="stat"><b id="nNotes">0</b><span>Notes shared</span></div>
+    <div class="stat"><b id="nReqs">0</b><span>Open requests</span></div>
+    <div class="stat"><b id="nMembers">–</b><span>Members</span></div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-tab="notes">Notes</button>
+    <button class="tab" data-tab="requests">Requests</button>
+    <button class="tab" data-tab="chat">Class chat<span id="chatNotify" class="chat-notify blink" aria-label="Class chat"></span></button>
+    <button class="tab hidden" data-tab="admin" id="adminTab">Admin<span class="badge hidden" id="pendBadge">0</span></button>
+  </nav>
+
+  <section id="pNotes">
+    <div class="toolbar"><input id="q" placeholder="Search notes…" aria-label="Search notes"><button class="btn" id="addNote">＋ Share notes</button></div>
+    <div class="chips" id="chips"></div>
+    <div class="list" id="noteList"></div>
+  </section>
+
+  <section id="pRequests" class="hidden">
+    <div class="toolbar"><div class="grow" style="color:var(--muted);font-size:13px;align-self:center">Need something? Ask your classmates.</div><button class="btn" id="addReq">＋ New request</button></div>
+    <div class="list" id="reqList"></div>
+  </section>
+
+  <section id="pChat" class="hidden">
+    <div class="chat">
+      <div class="chat-log" id="chatLog"></div>
+      <form class="chat-form" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write a message…" autocomplete="off"><button class="btn" type="submit">Send</button></form>
+    </div>
+  </section>
+
+  <section id="pAdmin" class="hidden">
+    <div class="toolbar" style="justify-content:space-between;align-items:center"><div><h3 style="margin:0">Class chat management</h3><p style="margin:4px 0 0;color:var(--muted);font-size:12px">Clear all messages from the class chat. This cannot be undone.</p></div><button class="btn danger" id="clearChatBtn" type="button">Clear chat</button></div>
+    <h3 style="margin:20px 0 10px">Pending requests</h3>
+    <div class="list" id="pendList" style="margin-bottom:24px"></div>
+    <h3 style="margin:0 0 10px">Members</h3>
+    <div class="list" id="memList"></div>
+  </section>
+</main>
+
+<footer>© 2026 powered by Athul Krishna</footer>
+<div id="modalRoot"></div><div id="toastRoot"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, sendPasswordResetEmail }
+  from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, getDocs, writeBatch, onSnapshot, collection, query, orderBy, limit, serverTimestamp, arrayUnion }
+  from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBVey3fZgjCalU2IcTy61aSYLjTmlCCSOs",
+  authDomain: "login-user-14d8d.firebaseapp.com",
+  projectId: "login-user-14d8d",
+  storageBucket: "login-user-14d8d.firebasestorage.app",
+  messagingSenderId: "107815183859",
+  appId: "1:107815183859:web:d3a5d36c9c54a9d86fde86"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials = n => (n || "?").trim().split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
+const SUBJECTS = ["C Programming","English","Mathematics","Management","Linux","DE","Other"];
+function toast(m){ const r=$("#toastRoot"); r.innerHTML=`<div class="toast">${esc(m)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2800); }
+function ago(ts){
+  const d = ts?.toDate ? ts.toDate() : null; if(!d) return "just now";
+  const s = (Date.now()-d.getTime())/1000;
+  if(s<60) return "just now"; if(s<3600) return Math.floor(s/60)+" min ago";
+  if(s<86400) return Math.floor(s/3600)+" h ago"; if(s<172800) return "yesterday";
+  return Math.floor(s/86400)+" days ago";
+}
+function clock(ts){ const d=ts?.toDate?ts.toDate():new Date(); return d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
+function friendly(e){
+  const c = e?.code || "";
+  if(c.includes("email-already-in-use")) return "An account already exists with this email. Please log in.";
+  if(c.includes("invalid-credential")||c.includes("wrong-password")||c.includes("user-not-found")) return "Incorrect email or password.";
+  if(c.includes("weak-password")) return "Password must contain at least 6 characters.";
+  if(c.includes("invalid-email")) return "Please enter a valid email address.";
+  if(c.includes("too-many-requests")) return "Too many attempts. Please try again later.";
+  if(c.includes("operation-not-allowed")) return "Email/Password sign-in is not enabled in the Firebase console.";
+  if(c.includes("permission-denied")) return "Permission denied. Check whether the Firestore rules have been published.";
+  return e?.message || "Something went wrong.";
+}
+function show(id){
+  ["vLoading","vAuth","vPending","vApp"].forEach(v => $("#"+v).classList.toggle("hidden", v!==id));
+}
+function modal(title, sub, body){
+  $("#modalRoot").innerHTML = `<div class="backdrop" id="bd"><div class="modal" role="dialog" aria-modal="true"><h2>${title}</h2><p class="sub">${sub}</p>${body}</div></div>`;
+  $("#bd").addEventListener("click", e => { if(e.target.id==="bd") closeModal(); });
+}
+const closeModal = () => $("#modalRoot").innerHTML = "";
+
+/* ---------- state ---------- */
+let user = null, profile = null, unsubs = [];
+let notes = [], reqs = [], members = [];
+let filter = "All", tab = "notes";
+let chatInitialSnapshot = false;
+const isApproved = () => profile?.status === "approved";
+const isAdmin = () => isApproved() && profile?.role === "admin";
+const stopAll = () => { unsubs.forEach(u => u()); unsubs = []; };
+
+/* ---------- auth UI ---------- */
+function setMode(join){
+  $("#segLogin").classList.toggle("on", !join); $("#segJoin").classList.toggle("on", join);
+  $("#loginForm").classList.toggle("hidden", join); $("#joinForm").classList.toggle("hidden", !join);
+  $("#authMsg").innerHTML = "";
+}
+const authMsg = (t, ok) => $("#authMsg").innerHTML = `<div class="msg ${ok?"ok":"err"}">${esc(t)}</div>`;
+$("#segLogin").onclick = () => setMode(false);
+$("#segJoin").onclick = () => setMode(true);
+
+$("#loginForm").onsubmit = async e => {
+  e.preventDefault(); const b = e.target.querySelector("button[type=submit]"); b.disabled = true;
+  try { await signInWithEmailAndPassword(auth, $("#le").value.trim(), $("#lp").value); }
+  catch(err){ authMsg(friendly(err)); } finally { b.disabled = false; }
+};
+$("#joinForm").onsubmit = async e => {
+  e.preventDefault(); const b = e.target.querySelector("button[type=submit]"); b.disabled = true;
+  const name = $("#jn").value.trim(), email = $("#je").value.trim();
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, $("#jp").value);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, "users", cred.user.uid), {
+      name, email, semester: $("#js").value, batch: $("#jb").value.trim(),
+      status: "pending", role: "member", createdAt: serverTimestamp()
+    });
+  } catch(err){ authMsg(friendly(err)); } finally { b.disabled = false; }
+};
+$("#forgotBtn").onclick = async () => {
+  const email = $("#le").value.trim();
+  if(!email){ authMsg("Enter your email above and click again."); return; }
+  try { await sendPasswordResetEmail(auth, email); authMsg("The password reset link has been sent to your email.", true); }
+  catch(err){ authMsg(friendly(err)); }
+};
+const logout = () => signOut(auth);
+$("#logoutBtn").onclick = logout; $("#pendLogout").onclick = logout;
+
+/* ---------- session flow ---------- */
+show("vLoading");
+onAuthStateChanged(auth, async u => {
+  stopAll(); user = u; profile = null; notes = []; reqs = []; members = []; chatInitialSnapshot = false;
+
+  appStarted = false;
+  $("#whoBox").classList.toggle("hidden", !u);
+  if(!u){ show("vAuth"); return; }
+  $("#whoName").textContent = u.displayName || u.email;
+
+  // Secure first-login setup for the admin pre-authorized in admins/{uid}.
+  // Ordinary students cannot create an admin marker or an admin profile.
+  try {
+    const profileRef = doc(db, "users", u.uid);
+    const profileSnap = await getDoc(profileRef);
+    if (!profileSnap.exists()) {
+      const adminMarker = await getDoc(doc(db, "admins", u.uid));
+      if (adminMarker.exists()) {
+        await setDoc(profileRef, {
+          name: u.displayName || (u.email || "Admin").split("@")[0],
+          email: u.email || "",
+          semester: "Admin",
+          batch: "Admin",
+          status: "approved",
+          role: "admin",
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+  } catch (err) {
+    toast("Account setup: " + friendly(err));
+  }
+
+  unsubs.push(onSnapshot(doc(db, "users", u.uid), snap => {
+    profile = snap.exists() ? snap.data() : null;
+    route();
+  }, err => toast(friendly(err))));
+});
+
+let appStarted = false;
+function route(){
+  if(!user) return;
+  if(!isApproved()){
+    appStarted = false;
+    const declined = profile?.status === "declined";
+    $("#pendIcon").textContent = declined ? "✕" : "⏳";
+    $("#pendTitle").textContent = declined ? "Request declined" : "Waiting for approval";
+    $("#pendText").textContent = declined
+      ? "The admin has not approved this request. Please contact your class admin."
+      : "Your request has been sent to the admin. This page will open automatically after approval.";
+    show("vPending"); return;
+  }
+  show("vApp");
+  $("#adminTab").classList.toggle("hidden", !isAdmin());
+  if(!isAdmin() && tab === "admin") setTab("notes");
+  if(!appStarted){ appStarted = true; startData(); }
+}
+
+function startData(){
+  unsubs.push(onSnapshot(query(collection(db,"notes"), orderBy("createdAt","desc"), limit(200)), s => {
+    notes = s.docs.map(d => ({id:d.id, ...d.data()})); renderNotes(); $("#nNotes").textContent = notes.length;
+  }, e => toast(friendly(e))));
+  unsubs.push(onSnapshot(query(collection(db,"requests"), orderBy("createdAt","desc"), limit(100)), s => {
+    reqs = s.docs.map(d => ({id:d.id, ...d.data()})); renderReqs(); $("#nReqs").textContent = reqs.length;
+  }, e => toast(friendly(e))));
+  unsubs.push(onSnapshot(query(collection(db,"messages"), orderBy("createdAt","desc"), limit(60)), s => {
+    if (chatInitialSnapshot) {
+      const hasNewFromOthers = s.docChanges().some(change =>
+        change.type === "added" && change.doc.data().uid !== user.uid
+      );
+      // The green chat indicator stays visible at all times.
+    } else {
+      chatInitialSnapshot = true;
+    }
+    renderChat(s.docs.map(d => ({id:d.id, ...d.data()})).reverse());
+  }, e => toast(friendly(e))));
+  // Every approved member reads only the public aggregate count, not other users' profiles.
+  unsubs.push(onSnapshot(doc(db,"stats","members"), snap => {
+    $("#nMembers").textContent = snap.exists() ? (snap.data().count ?? 0) : "0";
+  }, e => toast(friendly(e))));
+  if(isAdmin()){
+    unsubs.push(onSnapshot(query(collection(db,"users"), orderBy("createdAt","desc")), async snap => {
+      members = snap.docs.map(d => ({id:d.id, ...d.data()}));
+      renderAdmin();
+      const count = members.filter(m => m.status === "approved").length;
+      try {
+        await setDoc(doc(db,"stats","members"), {count, updatedAt:serverTimestamp()});
+      } catch(err) { toast("Could not update member count: " + friendly(err)); }
+    }, e => toast(friendly(e))));
+  }
+}
+
+/* ---------- tabs ---------- */
+function setTab(t){
+  tab = t;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  [["notes","pNotes"],["requests","pRequests"],["chat","pChat"],["admin","pAdmin"]].forEach(([k,id]) => $("#"+id).classList.toggle("hidden", k !== t));
+  if(t === "chat"){ const l = $("#chatLog"); l.scrollTop = l.scrollHeight; }
+}
+$("#tabs").onclick = e => { const b = e.target.closest(".tab"); if(b) setTab(b.dataset.tab); };
+
+/* ---------- notes ---------- */
+function renderChips(){
+  $("#chips").innerHTML = ["All", ...SUBJECTS].map(s => `<button class="chip ${s===filter?"on":""}" data-f="${esc(s)}">${esc(s==="All"?"All notes":s)}</button>`).join("");
+}
+$("#chips").onclick = e => { const b = e.target.closest("[data-f]"); if(!b) return; filter = b.dataset.f; renderNotes(); };
+$("#q").oninput = () => renderNotes();
+function renderNotes(){
+  renderChips();
+  const q = $("#q").value.toLowerCase();
+  const found = notes.filter(n => (filter==="All" || n.subject===filter) && `${n.title} ${n.subject} ${n.byName}`.toLowerCase().includes(q));
+  $("#noteList").innerHTML = found.length ? found.map(n => {
+    const mine = n.uid === user.uid || isAdmin();
+    const ext = (n.fileName || n.link || "").split("?")[0].split(".").pop().toLowerCase();
+    const label = ["pdf","doc","docx","ppt","pptx","xls","xlsx","png","jpg","jpeg"].includes(ext) ? ext.toUpperCase().slice(0,4) : "FILE";
+    return `<article class="item"><div class="ficon">${esc(label)}</div>
+      <div class="grow"><strong>${esc(n.title)}</strong><p>${esc(n.byName)} · ${ago(n.createdAt)}</p><span class="tag">${esc(n.subject)}</span></div>
+      <a class="btn soft sm" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
+      ${mine ? `<button class="btn danger sm" data-delnote="${n.id}" aria-label="Delete note">✕</button>` : ""}</article>`;
+  }).join("") : `<div class="empty">No notes uploaded yet. Share the first file!</div>`;
+}
+$("#noteList").onclick = async e => {
+  const d = e.target.closest("[data-delnote]"); if(!d) return;
+  if(!confirm("Delete this note?")) return;
+  const note = notes.find(n => n.id === d.dataset.delnote);
+  try {
+    await deleteDoc(doc(db,"notes",d.dataset.delnote));
+    
+    toast("Note deleted.");
+  } catch(err){ toast(friendly(err)); }
+};
+$("#addNote").onclick = () => {
+  modal("Upload class notes","Choose a file from your device. Maximum 15 MB.",
+  `<form id="nf"><div class="field"><label for="nt">Title</label><input id="nt" required maxlength="120" placeholder="e.g. C Programming — Unit 2"></div>
+   <div class="field"><label for="ns">Subject</label><select id="ns">${SUBJECTS.map(s=>`<option>${esc(s)}</option>`).join("")}</select></div>
+   <div class="field"><label for="noteFile">Select PDF, Word, PPT or image</label><input id="noteFile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" required></div>
+   <div id="uploadStatus" role="status" aria-live="polite"></div>
+   <div style="display:flex;gap:8px"><button class="btn ghost full" type="button" id="cx">Cancel</button><button class="btn full" type="submit" id="shareBtn">Upload</button></div></form>`);
+  $("#cx").onclick = closeModal;
+  $("#nf").onsubmit = async e => {
+    e.preventDefault();
+    const file = $("#noteFile").files[0];
+    const allowed = ["pdf","doc","docx","ppt","pptx","png","jpg","jpeg"];
+    const ext = (file?.name.split(".").pop() || "").toLowerCase();
+    if(!file || !allowed.includes(ext)){ toast("Choose a PDF, Word, PPT or image file."); return; }
+    if(file.size > 15 * 1024 * 1024){ toast("File must be 15 MB or smaller."); return; }
+    const btn = $("#shareBtn");
+    btn.disabled = true;
+    $("#cx").disabled = true;
+    $("#uploadStatus").textContent = "Uploading file…";
+    let path = null;
+    try {
+      path = null;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "classmate_notes");
+      const response = await fetch("https://api.cloudinary.com/v1_1/ag2bwflq/auto/upload", { method:"POST", body:formData });
+      const uploaded = await response.json();
+      if(!response.ok) throw new Error(uploaded.error?.message || "Cloudinary upload failed.");
+      const link = uploaded.secure_url;
+      $("#uploadStatus").textContent = "Saving note details…";
+      await addDoc(collection(db,"notes"), {title:$("#nt").value.trim(),subject:$("#ns").value,link,storagePath:path,fileName:file.name,uid:user.uid,byName:profile.name,createdAt:serverTimestamp()});
+      closeModal(); toast("Note uploaded successfully!");
+    } catch(err) {
+      if(path) { try { await deleteObject(storageRef(storage,path)); } catch(_) {} }
+      $("#uploadStatus").textContent = "Upload failed: " + friendly(err);
+      toast(friendly(err));
+      btn.disabled = false; $("#cx").disabled = false;
+    }
+  };
+};
+
+/* ---------- requests ---------- */
+function renderReqs(){
+  $("#reqList").innerHTML = reqs.length ? reqs.map(r => {
+    const voters = r.voters || [], voted = voters.includes(user.uid);
+    const mine = r.uid === user.uid || isAdmin();
+    return `<div class="item"><div class="ficon" style="background:var(--orange-soft);color:var(--orange)">＋</div>
+      <div class="grow"><strong>${esc(r.title)}</strong><p>${esc(r.subject)} · by ${esc(r.byName)} · ${ago(r.createdAt)}</p><span class="tag">♡ ${voters.length} need this</span></div>
+      <button class="btn ${voted?"ghost":"soft"} sm" data-vote="${r.id}" ${voted?"disabled":""}>${voted?"Voted":"I need this"}</button>
+      ${mine ? `<button class="btn danger sm" data-delreq="${r.id}" aria-label="Delete request">✕</button>` : ""}</div>`;
+  }).join("") : `<div class="empty">There are no open requests yet. Create the first one!</div>`;
+}
+$("#reqList").onclick = async e => {
+  const v = e.target.closest("[data-vote]"), d = e.target.closest("[data-delreq]");
+  try {
+    if(v) await updateDoc(doc(db,"requests",v.dataset.vote), { voters: arrayUnion(user.uid) });
+    if(d && confirm("Do you want to delete this request?")) await deleteDoc(doc(db,"requests",d.dataset.delreq));
+  } catch(err){ toast(friendly(err)); }
+};
+$("#addReq").onclick = () => {
+  modal("Request notes","Which notes do you need?",
+  `<form id="rf"><div class="field"><label for="rt">What do you need?</label><input id="rt" required maxlength="120" placeholder="e.g. Linux shell scripting programs"></div>
+   <div class="field"><label for="rs">Subject</label><select id="rs">${SUBJECTS.map(s=>`<option>${s}</option>`).join("")}</select></div>
+   <div style="display:flex;gap:8px"><button class="btn ghost full" type="button" id="cx">Cancel</button><button class="btn full" type="submit">Post request</button></div></form>`);
+  $("#cx").onclick = closeModal;
+  $("#rf").onsubmit = async e => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db,"requests"), { title:$("#rt").value.trim(), subject:$("#rs").value, uid:user.uid, byName:profile.name, voters:[user.uid], createdAt:serverTimestamp() });
+      closeModal(); toast("Request posted.");
+    } catch(err){ toast(friendly(err)); }
+  };
+};
+
+/* ---------- chat ---------- */
+function renderChat(msgs){
+  const log = $("#chatLog");
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  log.innerHTML = msgs.length ? msgs.map(m => {
+    const me = m.uid === user.uid;
+    return `<div class="bubble-row ${me?"me":""}"><div class="avatar">${esc(initials(m.byName))}</div>
+      <div class="bubble">${me?"":`<b>${esc(m.byName)}</b>`}${esc(m.text)}<time>${clock(m.createdAt)}</time></div></div>`;
+  }).join("") : `<div class="empty" style="margin:auto">Send the first message 👋</div>`;
+  if(atBottom || tab !== "chat") log.scrollTop = log.scrollHeight;
+}
+$("#chatForm").onsubmit = async e => {
+  e.preventDefault();
+  const inp = $("#chatInput"), text = inp.value.trim(); if(!text) return;
+  inp.value = "";
+  try { await addDoc(collection(db,"messages"), { text, uid:user.uid, byName:profile.name, createdAt:serverTimestamp() }); }
+  catch(err){ inp.value = text; toast(friendly(err)); }
+};
+
+/* ---------- admin chat cleanup ---------- */
+$("#clearChatBtn").onclick = async () => {
+  if (!isAdmin()) { toast("Only admins can clear the class chat."); return; }
+  if (!confirm("Delete ALL class chat messages for everyone? This cannot be undone.")) return;
+  const btn = $("#clearChatBtn");
+  btn.disabled = true;
+  btn.textContent = "Clearing…";
+  try {
+    const snap = await getDocs(collection(db,"messages"));
+    const docs = snap.docs;
+    for (let i = 0; i < docs.length; i += 450) {
+      const batch = writeBatch(db);
+      docs.slice(i, i + 450).forEach(item => batch.delete(item.ref));
+      await batch.commit();
+    }
+    toast(`Chat cleared. ${docs.length} message(s) deleted.`);
+  } catch(err) {
+    toast("Could not clear chat: " + friendly(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Clear chat";
+  }
+};
+
+/* ---------- admin ---------- */
+function renderAdmin(){
+  const pend = members.filter(m => m.status === "pending");
+  const ok = members.filter(m => m.status === "approved");
+  $("#nMembers").textContent = ok.length;
+  $("#pendBadge").textContent = pend.length; $("#pendBadge").classList.toggle("hidden", !pend.length);
+  $("#pendList").innerHTML = pend.length ? pend.map(m => `<div class="item"><div class="avatar">${esc(initials(m.name))}</div>
+    <div class="grow"><strong>${esc(m.name)}</strong><p>${esc(m.email)} · ${esc(m.semester)} · ${esc(m.batch)}</p></div>
+    <button class="btn sm" data-approve="${m.id}">Approve</button><button class="btn danger sm" data-decline="${m.id}">Decline</button></div>`).join("")
+    : `<div class="empty">There are no pending requests.</div>`;
+  $("#memList").innerHTML = ok.map(m => `<div class="item"><div class="avatar">${esc(initials(m.name))}</div>
+    <div class="grow"><strong>${esc(m.name)}${m.role==="admin"?" · Admin":""}</strong><p>${esc(m.email)} · ${esc(m.semester)} · ${esc(m.batch)}</p></div>
+    ${m.id!==user.uid ? `<button class="btn ghost sm" data-revoke="${m.id}">Remove</button>` : ""}</div>`).join("");
+}
+$("#pAdmin").onclick = async e => {
+  const a = e.target.closest("[data-approve]"), d = e.target.closest("[data-decline]"), r = e.target.closest("[data-revoke]");
+  try {
+    if(a){ await updateDoc(doc(db,"users",a.dataset.approve), { status:"approved" }); toast("Approved ✓"); }
+    if(d){ await updateDoc(doc(db,"users",d.dataset.decline), { status:"declined" }); toast("Declined."); }
+    if(r && confirm("Do you want to remove this member's access?")){ await updateDoc(doc(db,"users",r.dataset.revoke), { status:"declined" }); toast("Access removed."); }
+  } catch(err){ toast(friendly(err)); }
+};
+</script>
+</body>
+</html>
