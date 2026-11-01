@@ -65,7 +65,7 @@ function updateProfileButton(){
 function openProfileEditor(){
   if(!user || !isApproved()) return;
   const current = profile?.avatarURL || "";
-  modal("Profile photo","Choose a clear photo for your Classmate account. JPG, PNG or WEBP, up to 5 MB.",
+  modal("Profile photo","Choose a clear photo for your Classmate account. JPG, PNG or WEBP, up to 10 MB.",
     `<div id="avatarPreviewWrap">${current ? `<img class="profile-preview" src="${esc(current)}" alt="Current profile photo">` : `<div class="avatar profile-preview" style="display:grid;place-items:center;font-size:25px">${esc(initials(profile?.name))}</div>`}</div>
     <form id="avatarForm"><div class="field"><label for="avatarFile">Choose photo</label><input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" required></div>
     <div id="avatarStatus" role="status" aria-live="polite"></div>
@@ -73,12 +73,12 @@ function openProfileEditor(){
   $("#avatarCancel").onclick=closeModal;
   $("#avatarFile").onchange=()=>{
     const f=$("#avatarFile").files[0]; if(!f) return;
-    if(!["image/jpeg","image/png","image/webp"].includes(f.type) || f.size>5*1024*1024){toast("Choose JPG, PNG or WEBP up to 5 MB.");$("#avatarFile").value="";return;}
+    if(!["image/jpeg","image/png","image/webp"].includes(f.type) || f.size>10*1024*1024){toast("Choose JPG, PNG or WEBP up to 10 MB.");$("#avatarFile").value="";return;}
     const reader=new FileReader(); reader.onload=()=>{$("#avatarPreviewWrap").innerHTML=`<img class="profile-preview" src="${reader.result}" alt="Photo preview">`;}; reader.readAsDataURL(f);
   };
   $("#avatarForm").onsubmit=async e=>{
     e.preventDefault(); const file=$("#avatarFile").files[0]; if(!file) return;
-    if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){toast("Choose JPG, PNG or WEBP up to 5 MB.");return;}
+    if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>10*1024*1024){toast("Choose JPG, PNG or WEBP up to 10 MB.");return;}
     const btn=$("#avatarSave");btn.disabled=true;$("#avatarCancel").disabled=true;$("#avatarStatus").textContent="Uploading photo…";
     try{
       const data=new FormData();data.append("file",file);data.append("upload_preset","classmate_notes");
