@@ -57,7 +57,10 @@ service cloud.firestore {
           && request.auth.uid == uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avatarURL'])
           && request.resource.data.avatarURL is string
-          && request.resource.data.avatarURL.matches('^https://res\\.cloudinary\\.com/ag2bwflq/image/upload/.+'))
+          && (
+            request.resource.data.avatarURL == ''
+            || request.resource.data.avatarURL.matches('^https://res\\.cloudinary\\.com/ag2bwflq/image/upload/.+')
+          ))
         ||
         (isAdmin()
           && uid != request.auth.uid
