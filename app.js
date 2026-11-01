@@ -67,10 +67,18 @@ function openProfileEditor(){
   const current = profile?.avatarURL || "";
   modal("Profile photo","Choose a clear photo for your Classmate account. JPG, PNG or WEBP, up to 10 MB.",
     `<div id="avatarPreviewWrap">${current ? `<img class="profile-preview" src="${esc(current)}" alt="Current profile photo">` : `<div class="avatar profile-preview" style="display:grid;place-items:center;font-size:25px">${esc(initials(profile?.name))}</div>`}</div>
-    <form id="avatarForm"><div class="field"><label for="avatarFile">Choose photo</label><input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+    <form id="avatarForm"><div class="field"><label for="avatarFile">Choose photo</label><input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" required style="display:block;visibility:visible;opacity:1;width:100%;height:auto;position:static;clip:auto"></div>
     <div id="avatarStatus" role="status" aria-live="polite"></div>
-    <div style="display:flex;gap:8px"><button class="btn ghost full" type="button" id="avatarCancel">Cancel</button><button class="btn full" type="submit" id="avatarSave">Save photo</button></div></form>`);
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost full" type="button" id="avatarCancel">Cancel</button><button class="btn full" type="submit" id="avatarSave">Save photo</button>${current ? `<button class="btn ghost full" type="button" id="avatarRemove">Remove photo</button>` : ""}</div></form>`);
   $("#avatarCancel").onclick=closeModal;
+  if(current) $("#avatarRemove").onclick=async()=>{
+    const btn=$("#avatarRemove");btn.disabled=true;$("#avatarSave").disabled=true;$("#avatarCancel").disabled=true;
+    $("#avatarStatus").textContent="Removing photo…";
+    try{
+      await updateDoc(doc(db,"users",user.uid),{avatarURL:""});
+      closeModal();toast("Profile photo removed.");
+    }catch(err){$("#avatarStatus").textContent="Could not remove photo: "+friendly(err);btn.disabled=false;$("#avatarSave").disabled=false;$("#avatarCancel").disabled=false;}
+  };
   $("#avatarFile").onchange=()=>{
     const f=$("#avatarFile").files[0]; if(!f) return;
     if(!["image/jpeg","image/png","image/webp"].includes(f.type) || f.size>10*1024*1024){toast("Choose JPG, PNG or WEBP up to 10 MB.");$("#avatarFile").value="";return;}
