@@ -50,11 +50,20 @@ service cloud.firestore {
             && request.resource.data.role == 'admin')
         );
 
-      // Admins can change only another user's approval status.
-      allow update: if isAdmin()
-        && uid != request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
-        && request.resource.data.status in ['approved', 'declined'];
+      // Members may change only their own Cloudinary profile photo.
+      // Admins may change only another user's approval status.
+      allow update: if (
+        (approved()
+          && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avatarURL'])
+          && request.resource.data.avatarURL is string
+          && request.resource.data.avatarURL.matches('^https://res\\.cloudinary\\.com/ag2bwflq/image/upload/.+'))
+        ||
+        (isAdmin()
+          && uid != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['approved', 'declined'])
+      );
 
       allow delete: if false;
     }
