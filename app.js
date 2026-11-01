@@ -53,6 +53,15 @@ function avatarHTML(name, url, extraClass="avatar"){
   return url ? `<div class="${extraClass}"><img src="${esc(url)}" alt="${esc(name || "Member")}'s profile photo" loading="lazy"></div>`
     : `<div class="${extraClass}" aria-label="${esc(name || "Member")}">${esc(initials(name))}</div>`;
 }
+function updateProfileButton(){
+  const btn=$("#profileBtn");
+  if(!btn) return;
+  const url=profile?.avatarURL;
+  btn.innerHTML=url
+    ? `<img src="${esc(url)}" alt="Your profile photo">`
+    : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M5 21a7 7 0 0 1 14 0"></path></svg>`;
+  btn.setAttribute("aria-label",url?"Change profile photo":"Add profile photo");
+}
 function openProfileEditor(){
   if(!user || !isApproved()) return;
   const current = profile?.avatarURL || "";
@@ -162,6 +171,7 @@ onAuthStateChanged(auth, async u => {
 
   unsubs.push(onSnapshot(doc(db, "users", u.uid), snap => {
     profile = snap.exists() ? snap.data() : null;
+    updateProfileButton();
     $("#profileBtn").classList.toggle("hidden", !isApproved());
     route();
   }, err => toast(friendly(err))));
