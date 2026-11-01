@@ -59,7 +59,7 @@ function updateProfileButton(){
   const url=profile?.avatarURL;
   btn.innerHTML=url
     ? `<img src="${esc(url)}" alt="Your profile photo">`
-    : `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M5 21a7 7 0 0 1 14 0"></path></svg>`;
+    : `<span class="profile-initials" aria-hidden="true">${esc(initials(profile?.name || user?.displayName || user?.email))}</span>`;
   btn.setAttribute("aria-label",url?"Change profile photo":"Add profile photo");
 }
 function openProfileEditor(){
