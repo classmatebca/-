@@ -166,34 +166,36 @@ onAuthStateChanged(auth, async u => {
   if(!u){ show("vAuth"); return; }
   $("#whoName").textContent = u.displayName || u.email;
 
-  // Secure first-login setup for the admin pre-authorized in admins/{uid}.
-  // Ordinary students cannot create an admin marker or an admin profile.
-  try {
-    const profileRef = doc(db, "users", u.uid);
-    const profileSnap = await getDoc(profileRef);
-    if (!profileSnap.exists()) {
-      const adminMarker = await getDoc(doc(db, "admins", u.uid));
-      if (adminMarker.exists()) {
-        await setDoc(profileRef, {
-          name: u.displayName || (u.email || "Admin").split("@")[0],
-          email: u.email || "",
-          semester: "Admin",
-          batch: "Admin",
-          status: "approved",
-          role: "admin",
-          createdAt: serverTimestamp()
-        });
-      }
-    }
-  } catch (err) {
-    toast("Account setup: " + friendly(err));
-  }
-
-  unsubs.push(onSnapshot(doc(db, "users", u.uid), snap => {
+  // Subscribe to the profile immediately. Existing users no longer wait for
+  // a separate getDoc request before the app can start rendering.
+  let adminSetupChecked = false;
+  unsubs.push(onSnapshot(doc(db, "users", u.uid), async snap => {
     profile = snap.exists() ? snap.data() : null;
     updateProfileButton();
     $("#profileBtn").classList.toggle("hidden", !isApproved());
     route();
+
+    // Only check the admin marker when the user profile is actually missing.
+    // This keeps the secure first-login admin setup without delaying normal logins.
+    if (!snap.exists() && !adminSetupChecked) {
+      adminSetupChecked = true;
+      try {
+        const adminMarker = await getDoc(doc(db, "admins", u.uid));
+        if (adminMarker.exists()) {
+          await setDoc(doc(db, "users", u.uid), {
+            name: u.displayName || (u.email || "Admin").split("@")[0],
+            email: u.email || "",
+            semester: "Admin",
+            batch: "Admin",
+            status: "approved",
+            role: "admin",
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch (err) {
+        toast("Account setup: " + friendly(err));
+      }
+    }
   }, err => toast(friendly(err))));
 });
 
