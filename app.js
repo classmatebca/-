@@ -101,7 +101,10 @@ function openProfileEditor(){
     if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>10*1024*1024){toast("Choose JPG, PNG or WEBP up to 10 MB.");return;}
     const btn=$("#avatarSave");btn.disabled=true;$("#avatarCancel").disabled=true;$("#avatarStatus").textContent="Uploading photo…";
     try{
-      const data=new FormData();data.append("file",file);data.append("upload_preset","classmate_notes");
+      $("#avatarStatus").textContent="Compressing photo…";
+      const optimized=await compressImage(file,{maxDimension:512,quality:.8});
+      const data=new FormData();data.append("file",optimized);data.append("upload_preset","classmate_notes");
+      $("#avatarStatus").textContent="Uploading optimized photo…";
       const response=await fetch("https://api.cloudinary.com/v1_1/ag2bwflq/image/upload",{method:"POST",body:data});
       const result=await response.json();if(!response.ok)throw new Error(result.error?.message||"Photo upload failed.");
       await updateDoc(doc(db,"users",user.uid),{avatarURL:result.secure_url});
