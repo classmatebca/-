@@ -364,22 +364,47 @@ $("#addReq").onclick = () => {
 };
 
 /* ---------- chat ---------- */
+let chatReplyTarget = null;
+function setChatReply(m){
+  chatReplyTarget = m;
+  const bar=$("#chatReplyPreview");
+  if(!m){bar.classList.add("hidden");bar.innerHTML="";return;}
+  bar.classList.remove("hidden");
+  bar.innerHTML=`<div class="reply-preview-copy"><b>Replying to ${esc(m.byName || "Member")}</b><span>${esc(m.text)}</span></div><button type="button" class="reply-close" id="cancelChatReply" aria-label="Cancel reply">×</button>`;
+  $("#cancelChatReply").onclick=()=>setChatReply(null);
+  $("#chatInput").focus();
+}
 function renderChat(msgs){
   const log = $("#chatLog");
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
   log.innerHTML = msgs.length ? msgs.map(m => {
     const me = m.uid === user.uid;
-    return `<div class="bubble-row ${me?"me":""}">${avatarHTML(m.byName,m.avatarURL)}
-      <div class="bubble">${me?"":`<b>${esc(m.byName)}</b>`}${esc(m.text)}<time>${clock(m.createdAt)}</time></div></div>`;
+    const quoted = m.replyTo ? `<div class="bubble-quote"><b>${esc(m.replyTo.byName || "Member")}</b><span>${esc(m.replyTo.text || "")}</span></div>` : "";
+    return `<div class="bubble-row ${me?"me":""}" data-message-id="${esc(m.id)}">
+      ${avatarHTML(m.byName,m.avatarURL)}
+      <div class="bubble-wrap"><div class="bubble">${me?"":`<b>${esc(m.byName)}</b>`}${quoted}${esc(m.text)}<time>${clock(m.createdAt)}</time></div><button class="chat-reply-btn" type="button" aria-label="Reply to ${esc(m.byName || "message")}">↩ Reply</button></div></div>`;
   }).join("") : `<div class="empty" style="margin:auto">Send the first message 👋</div>`;
+  log.querySelectorAll(".bubble-row").forEach(row=>{
+    const msg=msgs.find(x=>x.id===row.dataset.messageId);
+    row.querySelector(".chat-reply-btn").onclick=()=>setChatReply(msg);
+    let startX=0,startY=0;
+    row.addEventListener("touchstart",e=>{startX=e.changedTouches[0].clientX;startY=e.changedTouches[0].clientY;},{passive:true});
+    row.addEventListener("touchend",e=>{
+      const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;
+      if(dx>65 && Math.abs(dx)>Math.abs(dy)*1.3) setChatReply(msg);
+    },{passive:true});
+  });
   if(atBottom || tab !== "chat") log.scrollTop = log.scrollHeight;
 }
 $("#chatForm").onsubmit = async e => {
   e.preventDefault();
   const inp = $("#chatInput"), text = inp.value.trim(); if(!text) return;
+  const replyTo=chatReplyTarget ? {id:chatReplyTarget.id,byName:chatReplyTarget.byName || "Member",text:chatReplyTarget.text} : null;
   inp.value = "";
-  try { await addDoc(collection(db,"messages"), { text, uid:user.uid, byName:profile.name, avatarURL:profile.avatarURL || "", createdAt:serverTimestamp() }); }
-  catch(err){ inp.value = text; toast(friendly(err)); }
+  try {
+    await addDoc(collection(db,"messages"), { text, uid:user.uid, byName:profile.name, avatarURL:profile.avatarURL || "", ...(replyTo ? {replyTo} : {}), createdAt:serverTimestamp() });
+    setChatReply(null);
+  } catch(err){ inp.value = text; toast(friendly(err)); }
 };
 
 /* ---------- admin chat cleanup ---------- */
