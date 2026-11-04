@@ -177,7 +177,19 @@ onAuthStateChanged(auth, async u => {
   // Subscribe to the profile immediately. Existing users no longer wait for
   // a separate getDoc request before the app can start rendering.
   let adminSetupChecked = false;
+  let profileResolved = false;
+  // If the profile lookup is slow, replace the endless spinner with a clear
+  // connection message. Do not open private content until approval is confirmed.
+  const profileLoadingFallback = setTimeout(() => {
+    if (profileResolved) return;
+    $("#pendIcon").textContent = "…";
+    $("#pendTitle").textContent = "Connecting to Classmate";
+    $("#pendText").textContent = "Your login is detected. We are checking your account approval. Please wait a moment.";
+    show("vPending");
+  }, 1000);
   unsubs.push(onSnapshot(doc(db, "users", u.uid), async snap => {
+    profileResolved = true;
+    clearTimeout(profileLoadingFallback);
     profile = snap.exists() ? snap.data() : null;
     updateProfileButton();
     $("#profileBtn").classList.toggle("hidden", !isApproved());
