@@ -158,7 +158,15 @@ $("#logoutBtn").onclick = logout; $("#pendLogout").onclick = logout;
 
 /* ---------- session flow ---------- */
 show("vLoading");
+let authStateResolved = false;
+// Show the safe login screen after 1 second if Firebase is still restoring the session.
+// Private app content remains locked until authentication and approval are verified.
+const loadingFallback = setTimeout(() => {
+  if (!authStateResolved) show("vAuth");
+}, 1000);
 onAuthStateChanged(auth, async u => {
+  authStateResolved = true;
+  clearTimeout(loadingFallback);
   stopAll(); user = u; profile = null; notes = []; reqs = []; members = []; chatInitialSnapshot = false;
 
   appStarted = false;
