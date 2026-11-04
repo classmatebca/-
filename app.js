@@ -334,20 +334,46 @@ $("#addNote").onclick = () => {
 function renderReqs(){
   $("#reqList").innerHTML = reqs.length ? reqs.map(r => {
     const voters = r.voters || [], voted = voters.includes(user.uid);
-    const mine = r.uid === user.uid || isAdmin();
-    return `<div class="item">${avatarHTML(r.byName,r.avatarURL)}
-      <div class="grow"><strong>${esc(r.title)}</strong><p>${esc(r.subject)} · by ${esc(r.byName)} · ${ago(r.createdAt)}</p><span class="tag">♡ ${voters.length} need this</span></div>
-      <button class="btn ${voted?"ghost":"soft"} sm" data-vote="${r.id}" ${voted?"disabled":""}>${voted?"Voted":"I need this"}</button>
-      ${mine ? `<button class="btn danger sm" data-delreq="${r.id}" aria-label="Delete request">✕</button>` : ""}</div>`;
+    const mine = r.uid === user.uid || isAdmin(), files = r.attachments || [];
+    return `<article class="request-card">
+      <div class="request-head">${avatarHTML(r.byName,r.avatarURL)}
+        <div class="grow"><strong>${esc(r.title)}</strong><p>${esc(r.subject)} · by ${esc(r.byName)} · ${ago(r.createdAt)}</p><span class="tag">♡ ${voters.length} need this</span></div>
+        <span class="request-status ${files.length?"fulfilled":""}">${files.length?"Fulfilled":"Needed"}</span>
+      </div>
+      ${files.length ? `<div class="request-files">${files.map(f=>`<div class="request-file"><span class="request-file-icon">📄</span><div class="grow"><strong>${esc(f.fileName || "Shared notes")}</strong><small>Uploaded by ${esc(f.byName || "Classmate")}</small></div><a class="btn soft sm" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">Open file ↗</a></div>`).join("")}</div>` : `<p class="request-empty">No files uploaded yet. Help your classmates by sharing the notes.</p>`}
+      <div class="request-actions"><button class="btn soft sm" type="button" data-uploadreq="${r.id}">＋ Upload notes</button><button class="btn ${voted?"ghost":"soft"} sm" data-vote="${r.id}" ${voted?"disabled":""}>${voted?"Voted":"I need this"}</button>${mine ? `<button class="btn danger sm" data-delreq="${r.id}" aria-label="Delete request">✕</button>` : ""}</div>
+    </article>`;
   }).join("") : `<div class="empty">There are no open requests yet. Create the first one!</div>`;
 }
 $("#reqList").onclick = async e => {
-  const v = e.target.closest("[data-vote]"), d = e.target.closest("[data-delreq]");
+  const v=e.target.closest("[data-vote]"),d=e.target.closest("[data-delreq]"),u=e.target.closest("[data-uploadreq]");
   try {
-    if(v) await updateDoc(doc(db,"requests",v.dataset.vote), { voters: arrayUnion(user.uid) });
+    if(v) await updateDoc(doc(db,"requests",v.dataset.vote),{voters:arrayUnion(user.uid)});
     if(d && confirm("Do you want to delete this request?")) await deleteDoc(doc(db,"requests",d.dataset.delreq));
-  } catch(err){ toast(friendly(err)); }
+    if(u) openRequestUpload(u.dataset.uploadreq);
+  } catch(err){toast(friendly(err));}
 };
+function openRequestUpload(requestId){
+  const request=reqs.find(x=>x.id===requestId);if(!request)return;
+  modal("Upload requested notes",`Share a file for “${esc(request.title)}”. PDF, Word, PPT or image · Max 15 MB.`,
+    `<form id="requestUploadForm"><div class="field"><label for="requestNoteFile">Choose notes file</label><input id="requestNoteFile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" required></div><div id="requestUploadStatus" role="status" aria-live="polite"></div><div style="display:flex;gap:8px"><button class="btn ghost full" type="button" id="requestUploadCancel">Cancel</button><button class="btn full" type="submit" id="requestUploadSave">Upload notes</button></div></form>`);
+  $("#requestUploadCancel").onclick=closeModal;
+  $("#requestUploadForm").onsubmit=async e=>{
+    e.preventDefault();
+    const file=$("#requestNoteFile").files[0],allowed=["pdf","doc","docx","ppt","pptx","png","jpg","jpeg"];
+    const ext=(file?.name.split(".").pop()||"").toLowerCase();
+    if(!file||!allowed.includes(ext)){toast("Choose a PDF, Word, PPT or image file.");return;}
+    if(file.size>15*1024*1024){toast("File must be 15 MB or smaller.");return;}
+    const btn=$("#requestUploadSave");btn.disabled=true;$("#requestUploadCancel").disabled=true;$("#requestUploadStatus").textContent="Uploading file…";
+    try{
+      const data=new FormData();data.append("file",file);data.append("upload_preset","classmate_notes");
+      const response=await fetch("https://api.cloudinary.com/v1_1/ag2bwflq/auto/upload",{method:"POST",body:data});
+      const uploaded=await response.json();if(!response.ok)throw new Error(uploaded.error?.message||"Cloudinary upload failed.");
+      await updateDoc(doc(db,"requests",requestId),{attachments:arrayUnion({url:uploaded.secure_url,fileName:file.name,byName:profile.name,uid:user.uid,createdAt:new Date().toISOString()})});
+      closeModal();toast("Notes added to the request.");
+    }catch(err){$("#requestUploadStatus").textContent="Upload failed: "+friendly(err);btn.disabled=false;$("#requestUploadCancel").disabled=false;}
+  };
+}
 $("#addReq").onclick = () => {
   modal("Request notes","Which notes do you need?",
   `<form id="rf"><div class="field"><label for="rt">What do you need?</label><input id="rt" required maxlength="120" placeholder="e.g. Linux shell scripting programs"></div>
