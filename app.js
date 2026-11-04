@@ -20,6 +20,17 @@ const db = getFirestore(app);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const initials = n => (n || "?").trim().split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
+
+async function compressImage(file,{maxDimension=1600,quality=.82}={}){
+  if(!file?.type?.startsWith("image/")) return file;
+  const bitmap=await createImageBitmap(file);
+  const scale=Math.min(1,maxDimension/Math.max(bitmap.width,bitmap.height));
+  const width=Math.max(1,Math.round(bitmap.width*scale)),height=Math.max(1,Math.round(bitmap.height*scale));
+  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d",{alpha:false});ctx.drawImage(bitmap,0,0,width,height);bitmap.close?.();
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Image compression failed.")),"image/jpeg",quality));
+  return new File([blob],(file.name.replace(/\\.[^.]+$/,"")||"image")+".jpg",{type:"image/jpeg",lastModified:Date.now()});
+}
 const SUBJECTS = ["C Programming","English","Mathematics","Management","Linux","DE","Other"];
 function toast(m){ const r=$("#toastRoot"); r.innerHTML=`<div class="toast">${esc(m)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2800); }
 function ago(ts){
@@ -391,7 +402,7 @@ function openRequestUpload(requestId){
     if(file.size>15*1024*1024){toast("File must be 15 MB or smaller.");return;}
     const btn=$("#requestUploadSave");btn.disabled=true;$("#requestUploadCancel").disabled=true;$("#requestUploadStatus").textContent="Uploading file…";
     try{
-      const data=new FormData();data.append("file",file);data.append("upload_preset","classmate_notes");
+      const optimizedFile=file.type.startsWith("image/")?await compressImage(file,{maxDimension:1800,quality:.82}):file;\n      const data=new FormData();data.append("file",optimizedFile);data.append("upload_preset","classmate_notes");
       const response=await fetch("https://api.cloudinary.com/v1_1/ag2bwflq/auto/upload",{method:"POST",body:data});
       const uploaded=await response.json();if(!response.ok)throw new Error(uploaded.error?.message||"Cloudinary upload failed.");
       await updateDoc(doc(db,"requests",requestId),{attachments:arrayUnion({url:uploaded.secure_url,fileName:file.name,byName:profile.name,uid:user.uid,createdAt:new Date().toISOString()})});
