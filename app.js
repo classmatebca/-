@@ -347,8 +347,10 @@ $("#addNote").onclick = () => {
     let path = null;
     try {
       path = null;
+      const optimizedFile = file.type.startsWith("image/") ? await compressImage(file,{maxDimension:1800,quality:.82}) : file;
+      $("#uploadStatus").textContent = optimizedFile !== file ? "Uploading compressed image…" : "Uploading file…";
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", optimizedFile);
       formData.append("upload_preset", "classmate_notes");
       const response = await fetch("https://api.cloudinary.com/v1_1/ag2bwflq/auto/upload", { method:"POST", body:formData });
       const uploaded = await response.json();
