@@ -49,6 +49,11 @@ function modal(title, sub, body){
   $("#bd").addEventListener("click", e => { if(e.target.id==="bd") closeModal(); });
 }
 const closeModal = () => $("#modalRoot").innerHTML = "";
+$("#siteLogoPreview").onclick = () => {
+  modal("Classmate logo","Your class community, all in one place.",
+    `<div class="logo-preview-card"><div class="logo-preview-mark" aria-hidden="true">✳</div><div class="logo-preview-name">classmate</div><div class="sub">BCA CLASS</div></div><div class="avatar-actions"><button class="btn" type="button" id="logoPreviewClose">Close</button></div>`);
+  $("#logoPreviewClose").onclick = closeModal;
+};
 function avatarHTML(name, url, extraClass="avatar"){
   return url ? `<div class="${extraClass}"><img src="${esc(url)}" alt="${esc(name || "Member")}'s profile photo" loading="lazy"></div>`
     : `<div class="${extraClass}" aria-label="${esc(name || "Member")}">${esc(initials(name))}</div>`;
