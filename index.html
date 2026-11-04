@@ -309,6 +309,12 @@ header.top{transition:background .3s,box-shadow .3s}
   .btn::after,.hero>.card::before,.stat::before,.request-card::before{display:none!important}
 }
 
+
+/* Logo stays static: remove the glow and floating ring */
+.logo{animation:none!important;transform:none!important}
+.logo::after{content:none!important;display:none!important;animation:none!important}
+@media(prefers-reduced-motion:reduce){.logo{animation:none!important}}
+
 </style>
 </head>
 <body>
