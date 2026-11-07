@@ -260,14 +260,7 @@ function startData(){
     reqs = s.docs.map(d => ({id:d.id, ...d.data()})); renderReqs(); $("#nReqs").textContent = reqs.length;
   }, e => toast(friendly(e))));
   unsubs.push(onSnapshot(query(collection(db,"messages"), orderBy("createdAt","desc"), limit(60)), s => {
-    if (chatInitialSnapshot) {
-      const hasNewFromOthers = s.docChanges().some(change =>
-        change.type === "added" && change.doc.data().uid !== user.uid
-      );
-      // The green chat indicator stays visible at all times.
-    } else {
-      chatInitialSnapshot = true;
-    }
+    chatInitialSnapshot = true;
     renderChat(s.docs.map(d => ({id:d.id, ...d.data()})).reverse());
   }, e => toast(friendly(e))));
   // Every approved member reads only the public aggregate count, not other users' profiles.
@@ -318,10 +311,8 @@ function renderNotes(){
 $("#noteList").onclick = async e => {
   const d = e.target.closest("[data-delnote]"); if(!d) return;
   if(!confirm("Delete this note?")) return;
-  const note = notes.find(n => n.id === d.dataset.delnote);
   try {
     await deleteDoc(doc(db,"notes",d.dataset.delnote));
-    
     toast("Note deleted.");
   } catch(err){ toast(friendly(err)); }
 };
@@ -344,9 +335,7 @@ $("#addNote").onclick = () => {
     btn.disabled = true;
     $("#cx").disabled = true;
     $("#uploadStatus").textContent = "Uploading file…";
-    let path = null;
     try {
-      path = null;
       const optimizedFile = file.type.startsWith("image/") ? await compressImage(file,{maxDimension:1800,quality:.82}) : file;
       $("#uploadStatus").textContent = optimizedFile !== file ? "Uploading compressed image…" : "Uploading file…";
       const formData = new FormData();
@@ -357,10 +346,9 @@ $("#addNote").onclick = () => {
       if(!response.ok) throw new Error(uploaded.error?.message || "Cloudinary upload failed.");
       const link = uploaded.secure_url;
       $("#uploadStatus").textContent = "Saving note details…";
-      await addDoc(collection(db,"notes"), {title:$("#nt").value.trim(),subject:$("#ns").value,link,storagePath:path,fileName:file.name,uid:user.uid,byName:profile.name,avatarURL:profile.avatarURL || "",createdAt:serverTimestamp()});
+      await addDoc(collection(db,"notes"), {title:$("#nt").value.trim(),subject:$("#ns").value,link,fileName:file.name,uid:user.uid,byName:profile.name,avatarURL:profile.avatarURL || "",createdAt:serverTimestamp()});
       closeModal(); toast("Note uploaded successfully!");
     } catch(err) {
-      if(path) { try { await deleteObject(storageRef(storage,path)); } catch(_) {} }
       $("#uploadStatus").textContent = "Upload failed: " + friendly(err);
       toast(friendly(err));
       btn.disabled = false; $("#cx").disabled = false;
