@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build site with API key from repository secret
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: |
+          if [ -z "$FIREBASE_API_KEY" ]; then
+            echo "Missing repository secret FIREBASE_API_KEY (Settings > Secrets and variables > Actions)." >&2
+            exit 1
+          fi
+          mkdir _site
+          cp index.html app.js _site/
+          sed -i "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|" _site/app.js
+          if grep -q "__FIREBASE_API_KEY__" _site/app.js; then
+            echo "Placeholder was not replaced." >&2
+            exit 1
+          fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

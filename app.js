@@ -5,7 +5,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, getDoc
   from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBVey3fZgjCalU2IcTy61aSYLjTmlCCSOs",
+  apiKey: "__FIREBASE_API_KEY__",
   authDomain: "login-user-14d8d.firebaseapp.com",
   projectId: "login-user-14d8d",
   storageBucket: "login-user-14d8d.firebasestorage.app",
