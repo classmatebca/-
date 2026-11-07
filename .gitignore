@@ -1,0 +1,8 @@
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and local tooling
+node_modules/
+.DS_Store
