@@ -29,7 +29,7 @@ jobs:
             exit 1
           fi
           mkdir _site
-          cp index.html app.js _site/
+          cp index.html app.js file-viewer.html _site/
           sed -i "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|" _site/app.js
           if grep -q "__FIREBASE_API_KEY__" _site/app.js; then
             echo "Placeholder was not replaced." >&2
