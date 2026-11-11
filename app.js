@@ -19,6 +19,15 @@ const db = getFirestore(app);
 /* ---------- helpers ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fileViewerUrl = raw => {
+  try {
+    const url = new URL(raw);
+    if (url.protocol === "https:" && url.hostname === "res.cloudinary.com" && url.pathname.startsWith("/ag2bwflq/")) {
+      return "./file-viewer.html?file=" + encodeURIComponent(url.href);
+    }
+  } catch {}
+  return raw;
+};
 const initials = n => (n || "?").trim().split(/\s+/).slice(0,2).map(w => w[0]).join("").toUpperCase();
 
 async function compressImage(file,{maxDimension=1600,quality=.82}={}){
@@ -304,7 +313,7 @@ function renderNotes(){
     const label = ["pdf","doc","docx","ppt","pptx","xls","xlsx","png","jpg","jpeg"].includes(ext) ? ext.toUpperCase().slice(0,4) : "FILE";
     return `<article class="item">${avatarHTML(n.byName,n.avatarURL)}
       <div class="grow"><strong>${esc(n.title)}</strong><p>${esc(n.byName)} · ${ago(n.createdAt)}</p><span class="tag">${esc(n.subject)}</span></div>
-      <a class="btn soft sm" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">Open ↗</a>
+      <a class="btn soft sm" href="${esc(fileViewerUrl(n.link))}">Open ↗</a>
       ${mine ? `<button class="btn danger sm" data-delnote="${n.id}" aria-label="Delete note">✕</button>` : ""}</article>`;
   }).join("") : `<div class="empty">No notes uploaded yet. Share the first file!</div>`;
 }
@@ -366,7 +375,7 @@ function renderReqs(){
         <div class="grow"><strong>${esc(r.title)}</strong><p>${esc(r.subject)} · by ${esc(r.byName)} · ${ago(r.createdAt)}</p><span class="tag">♡ ${voters.length} need this</span></div>
         <span class="request-status ${files.length?"fulfilled":""}">${files.length?"Fulfilled":"Needed"}</span>
       </div>
-      ${files.length ? `<div class="request-files">${files.map(f=>`<div class="request-file"><span class="request-file-icon">📄</span><div class="grow"><strong>${esc(f.fileName || "Shared notes")}</strong><small>Uploaded by ${esc(f.byName || "Classmate")}</small></div><a class="btn soft sm" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">Open file ↗</a></div>`).join("")}</div>` : `<p class="request-empty">No files uploaded yet. Help your classmates by sharing the notes.</p>`}
+      ${files.length ? `<div class="request-files">${files.map(f=>`<div class="request-file"><span class="request-file-icon">📄</span><div class="grow"><strong>${esc(f.fileName || "Shared notes")}</strong><small>Uploaded by ${esc(f.byName || "Classmate")}</small></div><a class="btn soft sm" href="${esc(fileViewerUrl(f.url))}">Open file ↗</a></div>`).join("")}</div>` : `<p class="request-empty">No files uploaded yet. Help your classmates by sharing the notes.</p>`}
       <div class="request-actions"><button class="btn soft sm" type="button" data-uploadreq="${r.id}">＋ Upload notes</button><button class="btn ${voted?"ghost":"soft"} sm" data-vote="${r.id}" ${voted?"disabled":""}>${voted?"Voted":"I need this"}</button>${mine ? `<button class="btn danger sm" data-delreq="${r.id}" aria-label="Delete request">✕</button>` : ""}</div>
     </article>`;
   }).join("") : `<div class="empty">There are no open requests yet. Create the first one!</div>`;
