@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f7ff">
+<title>Classmate · File viewer</title>
+<style>
+:root{color-scheme:light;--blue:#3478f6;--ink:#183153;--muted:#68809e;--line:#d9e7fa;--bg:#f2f7ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:2;background:#f8fcffee;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
+a.button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border-radius:12px;background:var(--blue);color:#fff;text-decoration:none;font-weight:650}
+.brand{font-weight:750;font-size:17px}
+main{max-width:1000px;margin:0 auto;padding:16px}
+.notice{color:var(--muted);font-size:13px;margin:0 0 12px}
+.viewer{width:100%;height:calc(100dvh - 145px);min-height:420px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.actions a{font-size:14px}
+.error{background:#fff;border:1px solid #f1c7ce;border-radius:12px;padding:18px;color:#9b2638}
+@media(max-width:600px){header{gap:9px}.brand{font-size:15px}main{padding:12px}.viewer{height:calc(100dvh - 160px);min-height:360px}}
+</style>
+</head>
+<body>
+<header>
+  <a class="button" href="./" aria-label="Back to Classmate">← Back</a>
+  <div class="brand">Classmate · File viewer</div>
+</header>
+<main>
+  <p class="notice" id="fileName">Loading file…</p>
+  <div id="content"></div>
+  <div class="actions" id="actions"></div>
+</main>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const raw = params.get("file");
+  const content = document.getElementById("content");
+  const actions = document.getElementById("actions");
+  const fileName = document.getElementById("fileName");
+  let file;
+  try {
+    file = new URL(raw);
+    if (file.protocol !== "https:" || file.hostname !== "res.cloudinary.com" || !file.pathname.startsWith("/ag2bwflq/")) throw new Error();
+  } catch {
+    fileName.textContent = "File unavailable";
+    content.innerHTML = '<div class="error">This file link is invalid or is not hosted in the Classmate Cloudinary account.</div>';
+    return;
+  }
+  const name = decodeURIComponent(file.pathname.split("/").pop() || "Shared file");
+  fileName.textContent = name;
+  const original = document.createElement("a");
+  original.className = "button";
+  original.href = file.href;
+  original.target = "_blank";
+  original.rel = "noopener noreferrer";
+  original.textContent = "Open original file";
+  actions.append(original);
+  const isPdf = /\.pdf$/i.test(file.pathname);
+  const isImage = /\.(png|jpe?g|webp|gif)$/i.test(file.pathname);
+  if (isPdf || isImage) {
+    const frame = document.createElement(isImage ? "img" : "iframe");
+    frame.className = "viewer";
+    if (isImage) {
+      frame.alt = name;
+      frame.style.objectFit = "contain";
+    } else {
+      frame.title = name;
+      frame.setAttribute("allowfullscreen", "");
+    }
+    frame.src = file.href;
+    content.append(frame);
+  } else {
+    content.innerHTML = '<div class="error">This file type may not preview inside Safari. Use “Open original file” to view or download it. The Back button above will return to Classmate.</div>';
+  }
+})();
+</script>
+</body>
+</html>
