@@ -8,71 +8,182 @@
 <style>
 :root{color-scheme:light;--blue:#3478f6;--ink:#183153;--muted:#68809e;--line:#d9e7fa;--bg:#f2f7ff}
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{position:sticky;top:0;z-index:2;background:#f8fcffee;border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
-a.button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border-radius:12px;background:var(--blue);color:#fff;text-decoration:none;font-weight:650}
-.brand{font-weight:750;font-size:17px}
-main{max-width:1000px;margin:0 auto;padding:16px}
-.notice{color:var(--muted);font-size:13px;margin:0 0 12px}
-.viewer{width:100%;height:calc(100dvh - 145px);min-height:420px;border:1px solid var(--line);border-radius:14px;background:#fff}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.actions a{font-size:14px}
+header{position:sticky;top:0;z-index:5;background:#f8fcffee;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 10px calc(14px + env(safe-area-inset-left));display:flex;align-items:center;gap:10px}
+a.button,button.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:var(--blue);color:#fff;text-decoration:none;font:inherit;font-weight:650;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a.button.soft{background:#fff;color:var(--blue);border:1px solid var(--line)}
+.title{min-width:0;flex:1}
+.brand{font-weight:750;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notice{color:var(--muted);font-size:12px;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{max-width:1000px;margin:0 auto;padding:12px calc(12px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+#pages{display:flex;flex-direction:column;gap:10px;align-items:center}
+.page{width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.page canvas{display:block;width:100%;height:auto}
+.page .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.status{color:var(--muted);text-align:center;padding:28px 12px}
+img.viewer{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:10px;background:#fff;border:1px solid var(--line)}
+iframe.viewer{display:block;width:100%;height:calc(100dvh - 150px);min-height:420px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;justify-content:center}
 .error{background:#fff;border:1px solid #f1c7ce;border-radius:12px;padding:18px;color:#9b2638}
-@media(max-width:600px){header{gap:9px}.brand{font-size:15px}main{padding:12px}.viewer{height:calc(100dvh - 160px);min-height:360px}}
 </style>
 </head>
 <body>
 <header>
-  <a class="button" href="./" aria-label="Back to Classmate">← Back</a>
-  <div class="brand">Classmate · File viewer</div>
+  <a class="button" id="back" href="./" aria-label="Back to Classmate">← Back</a>
+  <div class="title">
+    <div class="brand" id="fileName">Loading file…</div>
+    <p class="notice" id="pageInfo"></p>
+  </div>
 </header>
 <main>
-  <p class="notice" id="fileName">Loading file…</p>
   <div id="content"></div>
   <div class="actions" id="actions"></div>
 </main>
 <script>
 (() => {
-  const params = new URLSearchParams(location.search);
-  const raw = params.get("file");
-  const content = document.getElementById("content");
-  const actions = document.getElementById("actions");
-  const fileName = document.getElementById("fileName");
+  const $ = id => document.getElementById(id);
+  const content = $("content"), actions = $("actions"), fileName = $("fileName"), pageInfo = $("pageInfo");
+
+  /* Back button: return to the app where the person came from, otherwise go to the home page. */
+  $("back").addEventListener("click", e => {
+    try {
+      if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) {
+        e.preventDefault();
+        history.back();
+      }
+    } catch (_) {}
+  });
+
+  const showError = msg => { content.innerHTML = ""; const d = document.createElement("div"); d.className = "error"; d.textContent = msg; content.append(d); };
+
+  const raw = new URLSearchParams(location.search).get("file");
   let file;
   try {
     file = new URL(raw);
     if (file.protocol !== "https:" || file.hostname !== "res.cloudinary.com" || !file.pathname.startsWith("/ag2bwflq/")) throw new Error();
   } catch {
     fileName.textContent = "File unavailable";
-    content.innerHTML = '<div class="error">This file link is invalid or is not hosted in the Classmate Cloudinary account.</div>';
+    showError("This file link is invalid or is not hosted in the Classmate Cloudinary account.");
     return;
   }
-  const name = decodeURIComponent(file.pathname.split("/").pop() || "Shared file");
+
+  let name = "Shared file";
+  try { name = decodeURIComponent(file.pathname.split("/").pop() || name); } catch (_) {}
   fileName.textContent = name;
-  const original = document.createElement("a");
-  original.className = "button";
-  original.href = file.href;
-  original.target = "_blank";
-  original.rel = "noopener noreferrer";
-  original.textContent = "Open original file";
-  actions.append(original);
-  const isPdf = /\.pdf$/i.test(file.pathname);
-  const isImage = /\.(png|jpe?g|webp|gif)$/i.test(file.pathname);
-  if (isPdf || isImage) {
-    const frame = document.createElement(isImage ? "img" : "iframe");
-    frame.className = "viewer";
-    if (isImage) {
-      frame.alt = name;
-      frame.style.objectFit = "contain";
-    } else {
-      frame.title = name;
-      frame.setAttribute("allowfullscreen", "");
-    }
-    frame.src = file.href;
-    content.append(frame);
-  } else {
-    content.innerHTML = '<div class="error">This file type may not preview inside Safari. Use “Open original file” to view or download it. The Back button above will return to Classmate.</div>';
+  document.title = name + " · Classmate";
+
+  const addButton = (label, href, soft, download) => {
+    const a = document.createElement("a");
+    a.className = "button" + (soft ? " soft" : "");
+    a.href = href; a.textContent = label;
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+    if (download) a.setAttribute("download", name);
+    actions.append(a);
+  };
+  addButton("Open original file", file.href, false);
+
+  const path = file.pathname;
+  const isPdf = /\.pdf$/i.test(path);
+  const isImage = /\.(png|jpe?g|webp|gif)$/i.test(path);
+  const isOffice = /\.(docx?|pptx?|xlsx?)$/i.test(path);
+
+  const iframeFallback = (src, note) => {
+    content.innerHTML = "";
+    const f = document.createElement("iframe");
+    f.className = "viewer"; f.title = name; f.src = src;
+    f.setAttribute("allowfullscreen", "");
+    content.append(f);
+    if (note) pageInfo.textContent = note;
+  };
+
+  /* ---------- images ---------- */
+  if (isImage) {
+    const img = document.createElement("img");
+    img.className = "viewer"; img.alt = name; img.src = file.href;
+    img.onerror = () => showError("The image could not be loaded. Try “Open original file”.");
+    content.append(img);
+    return;
   }
+
+  /* ---------- Word / PowerPoint / Excel via Microsoft Office viewer ---------- */
+  if (isOffice) {
+    iframeFallback("https://view.officeapps.live.com/op/embed.aspx?src=" + encodeURIComponent(file.href), "Preview by Microsoft Office viewer");
+    return;
+  }
+
+  /* ---------- PDF: draw pages ourselves so it scrolls properly on iPhone ---------- */
+  if (!isPdf) {
+    showError("This file type cannot be previewed. Use “Open original file” to view or download it.");
+    return;
+  }
+
+  content.innerHTML = '<div class="status">Loading PDF…</div>';
+  const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  const script = document.createElement("script");
+  script.src = PDFJS + "pdf.min.js";
+  script.onerror = () => iframeFallback(file.href, "Basic PDF view");
+  script.onload = async () => {
+    try {
+      const lib = window.pdfjsLib;
+      lib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+      const pdf = await lib.getDocument({ url: file.href }).promise;
+      pageInfo.textContent = pdf.numPages + (pdf.numPages === 1 ? " page" : " pages");
+      content.innerHTML = '<div id="pages"></div>';
+      const holder = $("pages");
+      const first = await pdf.getPage(1);
+      const ratio = first.getViewport({ scale: 1 }).height / first.getViewport({ scale: 1 }).width;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let rendered = new Set(), generation = 0;
+
+      const renderPage = async (box, num, gen) => {
+        const page = await pdf.getPage(num);
+        if (gen !== generation) return;
+        const width = box.clientWidth || holder.clientWidth;
+        const base = page.getViewport({ scale: 1 });
+        const viewport = page.getViewport({ scale: (width / base.width) * dpr });
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        if (gen !== generation) return;
+        box.innerHTML = "";
+        box.style.aspectRatio = "";
+        box.append(canvas);
+      };
+
+      const build = () => {
+        generation++; rendered = new Set(); holder.innerHTML = "";
+        const gen = generation;
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(en => {
+            if (!en.isIntersecting) return;
+            const num = Number(en.target.dataset.page);
+            if (rendered.has(num)) return;
+            rendered.add(num);
+            renderPage(en.target, num, gen).catch(() => { en.target.textContent = "Could not draw page " + num; });
+          });
+        }, { rootMargin: "800px 0px" });
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const box = document.createElement("div");
+          box.className = "page"; box.dataset.page = i;
+          box.style.aspectRatio = "1 / " + ratio;
+          box.innerHTML = '<div class="ph">Page ' + i + "</div>";
+          holder.append(box); io.observe(box);
+        }
+      };
+      build();
+
+      let lastWidth = holder.clientWidth, timer;
+      window.addEventListener("resize", () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { if (Math.abs(holder.clientWidth - lastWidth) > 40) { lastWidth = holder.clientWidth; build(); } }, 300);
+      });
+    } catch (err) {
+      iframeFallback(file.href, "Basic PDF view");
+    }
+  };
+  document.head.append(script);
 })();
 </script>
 </body>
